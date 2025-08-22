@@ -50,9 +50,11 @@ function Header() {
               Signin
             </button>
           </Link>
+          <Link to={'/register'}>
           <button className="px-6 py-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg text-white font-medium hover:bg-black  border transition-all transform hover:scale-105 hidden sm:block">
             SignUp
           </button>
+          </Link>
         </div>
       </header>
     </div>

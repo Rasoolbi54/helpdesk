@@ -5,9 +5,9 @@ import { Navigate } from "react-router-dom";
 export default function PrivateRoute({ children }) {
   const { token, loading } = useContext(helpDeskContext)
 
-  // Don't redirect or render children while loading
+  
   if (loading) {
-    return <div>Checking authentication...</div>; // or spinner
+    return <div>Checking authentication...</div>; 
   }
 
   if (!token) {

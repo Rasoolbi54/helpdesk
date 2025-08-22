@@ -17,7 +17,7 @@ function RegisterPage() {
   const { login } = useContext(helpDeskContext)
   const navigate = useNavigate();
 
-  // Validation
+
   const validate = () => {
     const newErrors = {};
     if (!name.trim()) newErrors.name = "Name is required";
@@ -38,13 +38,13 @@ function RegisterPage() {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:2000/api/auth/register",
+        "https://helpdesk-1-7475.onrender.com/api/auth/register",
         { name, email, password, role }
       );
 
       if (response.status === 201) {
         const { user, token } = response.data;
-        login(user, token); // Store user and token in context
+        login(user, token); 
         navigate("/user-dashboard");
       } else {
         setApiError(response.data.message || "Registration failed.");
@@ -65,7 +65,7 @@ function RegisterPage() {
         <div className="max-w-6xl w-full">
           <div className="rounded-2xl p-8 shadow-2xl">
             <div className="flex flex-col lg:flex-row items-center gap-12">
-              {/* Left Image */}
+             
               <div className="flex justify-center items-center flex-1 hidden sm:block">
                 <img
                   src="https://www.skytizens.com/wp-content/uploads/2023/10/5124558-300x226.png"
@@ -74,10 +74,10 @@ function RegisterPage() {
                 />
               </div>
 
-              {/* Divider */}
+           
               <div className="hidden lg:block w-px bg-gray-300"></div>
 
-              {/* Right - Form */}
+             
               <div className="flex-1 flex flex-col justify-center">
                 <h2 className="text-2xl font-semibold mb-2 text-white">
                   Create an Account
@@ -155,12 +155,7 @@ function RegisterPage() {
                     )}
                   </div>
 
-                  {/* Optional: Role selection dropdown */}
-                  {/* <select onChange={(e) => setRole(e.target.value)} value={role} disabled={loading} className="w-full px-3 py-3 border rounded-md text-white bg-transparent">
-                    <option value="user">User</option>
-                    <option value="agent">Support Agent</option>
-                    <option value="admin">Admin</option>
-                  </select> */}
+                
 
                   <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-4">
                     <button

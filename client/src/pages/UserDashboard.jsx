@@ -123,7 +123,7 @@ async function handleNewTicketSubmit(e) {
     };
 
     const response = await axios.post(
-      "http://localhost:2000/api/tickets",
+      "https://helpdesk-1-7475.onrender.com/api/tickets",
       payload,
      token,
 
