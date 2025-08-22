@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Headset,
   User,
@@ -18,7 +18,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { helpDeskContext } from "../context/HelpDeskContext";
 import axios from "axios";
 
-// Helpers for status & priorities
+
 const statusColors = {
   open: "bg-blue-100 text-blue-800 border-blue-200",
   in_progress: "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -61,24 +61,17 @@ const quickActions = [
 ];
 
 export default function UserDashboard() {
-  const { user, logout, token } = useContext(helpDeskContext);
-  console.log(token, "comingggggggggggggg") ;
-  
-
+  const { user, logout } = useContext(helpDeskContext);
   const navigate = useNavigate();
-  // Mock tickets
-  const [tickets, setTickets] = useState([]);
-  // Modals and form states
   const [showNewTicket, setShowNewTicket] = useState(false);
   const [showDetailsId, setShowDetailsId] = useState(null);
   const [showCommentId, setShowCommentId] = useState(null);
+  const [tickets , setTickets] = useState([])
   const initialTicket = {
-    title: "",
-    description: "",
-    priority: "medium",
-    category: "",
-    comment:[],
-    agent: "",
+     title:"",
+      description:"",
+      category:""
+     
   };
 
   const [newTicket, setNewTicket] = useState(initialTicket);
@@ -89,7 +82,7 @@ export default function UserDashboard() {
   });
   const [comment, setComment] = useState("");
   const [showProfile, setShowProfile] = useState(false);
-  // Handlers
+
   function handleQuickActionClick(action) {
     switch (action) {
       case "new_ticket":
@@ -114,32 +107,52 @@ async function handleNewTicketSubmit(e) {
     const payload = {
       title: newTicket.title,
       description: newTicket.description,
-      category: newTicket.category.toLowerCase(), // match allowed categories
-      priority: newTicket.priority.toLowerCase(), // must be low/medium/high
-      assignee: null, // initially unassigned
-      createdBy: user._id, // required field
-      comments: [],
-      lastUpdate: "Ticket submitted",
+      category: newTicket.category.toLowerCase(),
     };
 
     const response = await axios.post(
       "https://helpdesk-1-7475.onrender.com/api/tickets",
       payload,
-     token,
-
-
-     
-     
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
+      }
     );
 
     const createdTicket = response.data;
-    setTickets([createdTicket, ...tickets]);
+    console.log(response.data, "gettinngggggggggg");
+
+    setTickets((prev) => [...prev, createdTicket]);
     setShowNewTicket(false);
     setNewTicket(initialTicket);
   } catch (error) {
     console.error("Failed to create ticket:", error.response?.data || error);
   }
 }
+
+
+
+useEffect(()=>{
+  const fetchData = async () => {
+    const response = await axios.get(
+    "https://helpdesk-1-7475.onrender.com/api/tickets",
+     
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
+      }
+  );
+setTickets(response.data.tickets)
+
+  };
+
+
+  fetchData()
+},[])
 
 
    
@@ -183,6 +196,11 @@ async function handleNewTicketSubmit(e) {
     setShowCommentId(null);
   }
 
+  const handleClose = () =>{
+    setShowNewTicket(false);
+    setNewTicket(initialTicket);
+  }
+
   // Modals
   function TicketModal() {
     if (!showNewTicket) return null;
@@ -215,19 +233,7 @@ async function handleNewTicketSubmit(e) {
             className="border rounded p-2"
             required
           />
-          <select
-            value={newTicket.priority}
-            onChange={(e) =>
-              setNewTicket((t) => ({ ...t, priority: e.target.value }))
-            }
-            className="border rounded p-2"
-            required
-          >
-            <option value="urgent">Urgent</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-          </select>
+         
           <select
             value={newTicket.category}
             onChange={(e) =>
@@ -236,10 +242,10 @@ async function handleNewTicketSubmit(e) {
             className="border rounded p-2"
             required
           >
-            <option value="urgent">billing</option>
-            <option value="high">shipping</option>
-            <option value="medium">refund</option>
-            <option value="low">other</option>
+            <option value="billing">billing</option>
+            <option value="shipping">shipping</option>
+            <option value="refund">refund</option>
+            <option value="other">other</option>
           </select>
           <button
             type="submit"
@@ -248,7 +254,7 @@ async function handleNewTicketSubmit(e) {
             Submit
           </button>
           <button
-            onClick={() => setShowNewTicket(false)}
+            onClick={handleClose}
             type="button"
             className="text-gray-600 cursor-pointer border py-2 rounded-lg hover:bg-purple-100 hover:border-purple-500 "
           >
@@ -493,12 +499,10 @@ async function handleNewTicketSubmit(e) {
               </div>
               <div className="p-0">
                 <div className="space-y-1">
-                  {tickets.length === 0 ? (
-                    <div className="p-6">No tickets yet.</div>
-                  ) : (
+                  {tickets.length > 0 ? (
                     tickets.map((ticket) => (
                       <div
-                        key={ticket.id}
+                        key={ticket._id}
                         className="p-6 border-b border-slate-100 last:border-b-0 hover:bg-slate-50 transition-colors cursor-pointer"
                       >
                         <div className="flex items-start justify-between mb-3">
@@ -509,7 +513,7 @@ async function handleNewTicketSubmit(e) {
                             <div>
                               <div className="flex items-center gap-2 mb-1">
                                 <span className="font-bold text-slate-900">
-                                  {ticket.id}
+                                  {ticket._id}
                                 </span>
                                 <div
                                   className={`${
@@ -562,11 +566,17 @@ async function handleNewTicketSubmit(e) {
                         </div>
                       </div>
                     ))
-                  )}
+                  ) :(
+                    <div className="p-6">No tickets yet.</div>
+                  ) }
                 </div>
               </div>
             </div>
           </div>
+
+
+
+          
           {/* Quick Support Sidebar */}
           <div className="space-y-6">
             <form

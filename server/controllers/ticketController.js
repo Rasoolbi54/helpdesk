@@ -4,49 +4,28 @@ const { createSuggestion } = require("./agentSuggestionController");
 const AgentSuggestion = require('../models/agentSuggessionModel');
 
 exports.createTicket = async (req, res) => {
-  const { title, description, category, priority, assignee } = req.body;
+  const { title, description, category } = req.body;
 
   try {
     if (!title || !description || !category) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Create new ticket with defaults and refs
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    
+
     const newTicket = await Ticket.create({
       title,
       description,
-      category,
-      priority: priority || "medium",
-      status: "open",
+      category: category.toLowerCase(),
       createdBy: req.user.id,
-      assignee: assignee || null,
-      comments: [],
-      lastUpdate: "Ticket submitted",
     });
 
-    // Log ticket creation
-    await AuditLog.create({
-      ticketId: newTicket._id,
-      action: "ticket created",
-      changedBy: req.user.id,
-      newValue: "open",
-    });
-
-    // Generate suggestion (mock AI)
-    await createSuggestion(newTicket._id);
-
-    // Fetch latest suggestion
-    const suggestion = await AgentSuggestion.findOne({
-      ticketId: newTicket._id,
-    })
-      .sort({ createdAt: -1 })
-      .lean();
-
-    return res.status(200).json({
-      message: "Ticket created successfully",
-      ticket: newTicket,
-      suggestion: suggestion ? suggestion.suggestion : null,
-    });
+  
+    res.status(201).json({ message: "Ticket created successfully", ticket: newTicket });
   } catch (error) {
     console.error("Create Ticket Error:", error);
     res.status(500).json({ message: "Server error" });
@@ -147,3 +126,6 @@ exports.getTicketById = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+
