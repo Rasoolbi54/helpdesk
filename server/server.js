@@ -12,12 +12,23 @@ const agentSuggestionRoutes = require("./routes/agentSuggestionRoutes");
 const PORT = process.env.PORT
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://helpdesk-phi.vercel.app"
+];
 
 app.use(cors({
-  origin: ["https://helpdesk-phi.vercel.app", "http://localhost:5173",],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS: " + origin));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
+
 app.use(express.json());
 app.use('/api/auth' , authRoutes);
 app.use('/api',ticketRoutes);
