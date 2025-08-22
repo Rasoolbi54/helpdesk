@@ -14,7 +14,7 @@ const app = express();
 
 
 app.use(cors({
-  origin: ["https://helpdesk-phi.vercel.app/", "http://localhost:5173",],
+  origin: ["https://helpdesk-phi.vercel.app", "http://localhost:5173",],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
