@@ -78,8 +78,8 @@ Backend Setup
 Clone the repository:
 
 bash
-git clone https://github.com/yourusername/helpdesk-support-system.git
-cd helpdesk-support-system/backend
+git clone https://github.com/Rasoolbi54/helpdesk.git
+cd helpdesk/server
 Install dependencies:
 
 bash
