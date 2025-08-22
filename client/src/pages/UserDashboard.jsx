@@ -18,7 +18,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { helpDeskContext } from "../context/HelpDeskContext";
 import axios from "axios";
 
-
 const statusColors = {
   open: "bg-blue-100 text-blue-800 border-blue-200",
   in_progress: "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -66,12 +65,12 @@ export default function UserDashboard() {
   const [showNewTicket, setShowNewTicket] = useState(false);
   const [showDetailsId, setShowDetailsId] = useState(null);
   const [showCommentId, setShowCommentId] = useState(null);
-  const [tickets , setTickets] = useState([])
+  const [tickets, setTickets] = useState([]);
+
   const initialTicket = {
-     title:"",
-      description:"",
-      category:""
-     
+    title: "",
+    description: "",
+    category: "",
   };
 
   const [newTicket, setNewTicket] = useState(initialTicket);
@@ -101,61 +100,54 @@ export default function UserDashboard() {
         break;
     }
   }
-async function handleNewTicketSubmit(e) {
-  e.preventDefault();
-  try {
-    const payload = {
-      title: newTicket.title,
-      description: newTicket.description,
-      category: newTicket.category.toLowerCase(),
+  async function handleNewTicketSubmit(e) {
+    e.preventDefault();
+    try {
+      const payload = {
+        title: newTicket.title,
+        description: newTicket.description,
+        category: newTicket.category.toLowerCase(),
+      };
+
+      const response = await axios.post(
+        "https://helpdesk-1-7475.onrender.com/api/tickets",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const createdTicket = response.data;
+      console.log(response.data, "gettinngggggggggg");
+
+      setTickets((prev) => [...prev, createdTicket]);
+      setShowNewTicket(false);
+      setNewTicket(initialTicket);
+    } catch (error) {
+      console.error("Failed to create ticket:", error.response?.data || error);
+    }
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await axios.get(
+        "https://helpdesk-1-7475.onrender.com/api/tickets",
+
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setTickets(response.data.tickets);
     };
 
-    const response = await axios.post(
-      "https://helpdesk-1-7475.onrender.com/api/tickets",
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    const createdTicket = response.data;
-    console.log(response.data, "gettinngggggggggg");
-
-    setTickets((prev) => [...prev, createdTicket]);
-    setShowNewTicket(false);
-    setNewTicket(initialTicket);
-  } catch (error) {
-    console.error("Failed to create ticket:", error.response?.data || error);
-  }
-}
-
-
-
-useEffect(()=>{
-  const fetchData = async () => {
-    const response = await axios.get(
-    "https://helpdesk-1-7475.onrender.com/api/tickets",
-     
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-      }
-  );
-setTickets(response.data.tickets)
-
-  };
-
-
-  fetchData()
-},[])
-
-
-   
+    fetchData();
+  }, []);
 
   function handleQuickFormSubmit(e) {
     e.preventDefault();
@@ -196,14 +188,18 @@ setTickets(response.data.tickets)
     setShowCommentId(null);
   }
 
-  const handleClose = () =>{
+  const handleClose = () => {
     setShowNewTicket(false);
     setNewTicket(initialTicket);
-  }
+  };
 
   // Modals
   function TicketModal() {
     if (!showNewTicket) return null;
+    const handleInput = (e) => {
+      const { name, value } = e.target;
+      setNewTicket((prev) => ({ ...prev, [name]: value }));
+    };
 
     return (
       <div
@@ -216,30 +212,27 @@ setTickets(response.data.tickets)
           <h2 className="text-lg font-bold mb-2">New Ticket</h2>
           <input
             type="text"
+            name="title"
             placeholder="Title"
             value={newTicket.title}
-            onChange={(e) =>
-              setNewTicket((t) => ({ ...t, title: e.target.value }))
-            }
+            onChange={handleInput}
             className="border rounded p-2"
             required
           />
           <textarea
             placeholder="Describe your issue"
+            name="description"
             value={newTicket.description}
-            onChange={(e) =>
-              setNewTicket((t) => ({ ...t, description: e.target.value }))
-            }
+            onChange={handleInput}
             className="border rounded p-2"
             required
           />
-         
+
           <select
             value={newTicket.category}
-            onChange={(e) =>
-              setNewTicket((t) => ({ ...t, category: e.target.value }))
-            }
+            onChange={handleInput}
             className="border rounded p-2"
+            name="category"
             required
           >
             <option value="billing">billing</option>
@@ -357,12 +350,12 @@ setTickets(response.data.tickets)
             <div className="font-semibold text-xs text-gray-500 mb-1">
               NAVIGATION
             </div>
-            <Link
-              to="/"
+            <div
+            
               className="flex items-center gap-2 px-3 py-2 text-purple-700 font-semibold bg-purple-100 rounded"
             >
               <User size={18} /> Dashboard
-            </Link>
+            </div>
             {/* Other nav links */}
           </nav>
         </div>
@@ -566,17 +559,14 @@ setTickets(response.data.tickets)
                         </div>
                       </div>
                     ))
-                  ) :(
+                  ) : (
                     <div className="p-6">No tickets yet.</div>
-                  ) }
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
-
-
-          
           {/* Quick Support Sidebar */}
           <div className="space-y-6">
             <form
